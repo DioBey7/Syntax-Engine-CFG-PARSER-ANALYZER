@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+Parse_Tree_*.png
+Parse_Tree_*

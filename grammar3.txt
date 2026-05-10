@@ -1,0 +1,4 @@
+<expr> ::= <term> + <expr> | <term> - <expr> | <term>
+<term> ::= <factor> * <term> | <factor> / <term> | <factor>
+<factor> ::= ( <expr> ) | <num>
+<num> ::= 1 | 2 | 3 | 4 | 5 | 8 | 9

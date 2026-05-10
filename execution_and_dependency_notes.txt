@@ -1,0 +1,17 @@
+1. EXECUTION MODES
+   - To test the parser via the Command Line Interface (Terminal): 
+     Run -> main_display.py
+   - To test the parser via the Graphical User Interface (GUI): 
+     Run -> main_GUI.py
+
+2. IMPORTANT: GRAPHVIZ DEPENDENCY
+   The visual parse tree topologies are generated using the 'graphviz' library. 
+   For the program to successfully render and open these graphical trees (PDF/PNG), 
+   the Graphviz software must be installed on your system AND added to your 
+   environment variables (PATH).
+
+   Installation Link (Graphviz 14.1.5 - 32-bit EXE Installer):
+   https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/14.1.5/windows_10_cmake_Release_graphviz-install-14.1.5-win32.exe
+
+   * NOTE: During the installation process, please make sure to select the 
+     "Add Graphviz to the system PATH for all users" option.

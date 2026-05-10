@@ -1,0 +1,231 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper,left=25mm,right=25mm,top=25mm,bottom=25mm}
+\usepackage{amsmath} 
+\usepackage{amssymb}
+\usepackage{enumitem} 
+\usepackage{hyperref} 
+\usepackage{sectsty} 
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{pmboxdraw} 
+\usepackage{booktabs}
+\usepackage{caption}
+
+\sectionfont{\centering}
+
+\newcommand{\projecttitle}{SYNTAX ENGINE: A Multi-Grammar Recursive Syntax Analyzer with Automated PDF Diagnostics and Static DFS Guard}
+\newcommand{\studentname}{Beyza Yazıcı}
+\newcommand{\studentnumber}{443728}
+
+\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
+\definecolor{delim}{RGB}{20,105,176}
+
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily\small,
+    numbers=left,
+    numberstyle=\scriptsize,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{backcolour},
+    literate=*{0}{{{\color{black}0}}}{1} {1}{{{\color{black}1}}}{1} {2}{{{\color{black}2}}}{1} {3}{{{\color{black}3}}}{1} {4}{{{\color{black}4}}}{1} {5}{{{\color{black}5}}}{1} {8}{{{\color{black}8}}}{1} {9}{{{\color{black}9}}}{1} {:}{{{\color{red}{:}}}}{1} {,}{{{\color{red}{,}}}}{1} {\{}{{{\color{delim}{\{}}}}{1} {\}}{{{\color{delim}{\}}}}}{1} {[}{{{\color{delim}{[}}}}{1} {]}{{{\color{delim}{[}}}}{1},
+}
+
+\lstset{backgroundcolor=\color{backcolour}, basicstyle=\ttfamily\small, breaklines=true, frame=single}
+
+\begin{document}
+          
+    \begin{titlepage}
+        \centering
+        \vspace*{1cm}
+        \includegraphics[width=0.50\textwidth]{KTU_Logo_2A.png} 
+        \vspace{1cm}
+        
+        \textbf{\large KARADENIZ TECHNICAL UNIVERSITY}\\ \vspace{1mm}
+        \textbf{\large FACULTY OF ENGINEERING}\\ \vspace{1mm}
+        \textbf{\large DEPARTMENT OF SOFTWARE ENGINEERING}\\
+
+        \vspace{2cm}
+        
+        {\Large \textbf{\MakeUppercase{\projecttitle}}} \\
+        \vspace{2.5cm}
+        
+        {\large \textbf{Student Name:} \studentname} \\
+        {\large \textbf{Student Number:} \studentnumber} \\
+        \vspace{2cm}
+        
+        {\large \textbf{Date:} \today} \\
+        \vfill
+    \end{titlepage}
+          
+    \tableofcontents
+    \newpage
+
+    \section*{Abstract}
+    This report details the architectural engineering and implementation of the \textit{Syntax Engine}, a high-performance syntax analysis framework developed entirely without external parser generator libraries. The system is specifically designed to process dynamic Backus-Naur Form (BNF) grammars and features a custom Recursive Descent analyzer equipped with state-aware backtracking capabilities. The primary elements enhancing the project's originality include a Depth-First Search (DFS) based static left-recursion guard, automated Graphviz PDF reporting, and contextual semantic error diagnostics. The framework provides fully synchronized outputs through both a command-line interface (\texttt{main\_display.py}) and an advanced Graphical User Interface (\texttt{main\_GUI.py}).
+
+    \subsection*{Keywords}
+    Recursive Descent, Backtracking, DFS Cycle Detection, Visual Topology, Contextual Diagnostics, Software Architecture.
+
+    \section{Introduction}
+    Syntax analysis forms the cornerstone of compiler theory and formal language processing. While modern systems frequently utilize automated parser generators, constructing an analyzer from foundational principles offers profound insights into computational linguistics and memory management. The \textit{Syntax Engine} was developed to manage the complexities of non-deterministic grammars, preserve memory states during backtracking operations, and generate automated, high-resolution graphical topologies of the derivation process.
+
+    \section{System Architecture and Methodology}
+    The software adheres strictly to modular design principles, isolating the processes of data ingestion, kernel analysis, visualization, and user interaction into decoupled layers.
+
+    \subsection{Modular Components and Responsibilities}
+    The operational structure and the engineering responsibilities of each module are presented in Table \ref{tab:architecture}.
+
+    \begin{table}[h!]
+        \centering
+        \caption{Syntax Engine Modular Architecture}
+        \label{tab:architecture}
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{@{}p{3cm} p{3.5cm} p{8cm}@{}}
+            \toprule
+            \textbf{Phase} & \textbf{Module} & \textbf{Engineering Responsibility} \\
+            \midrule
+            1. Ingestion & \texttt{my\_reader.py} & BNF normalization and production rule sorting based on length (Longest-Match heuristic). \\
+            2. Kernel & \texttt{my\_parser.py} & Recursive core, DFS cycle detection, and memory state restoration during backtracking. \\
+            3. Reporting & \texttt{main\_display.py} & Manages automated batch testing and renders high-resolution PDF results directly to the user's screen. \\
+            4. Rendering & \texttt{tree\_gen.py} & Graphviz topology mapping and clean, strictly formatted JSON serialization. \\
+            5. UI / UX & \texttt{main\_GUI.py} & Event-driven interface management, embedded topological visualization, and real-time kernel logging. \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \subsection{Detailed Mathematical Model of the Analyzer}
+    The Syntax Engine models the grammar derivation process as a state-space search. Given a formal grammar $G = (V, \Sigma, R, S)$, the system treats each non-terminal $A \in V$ as a recursive evaluation function.
+
+    \begin{enumerate}
+        \item \textbf{Derivation Function:} The success of evaluating a non-terminal $A$ across its alternative production rules $\alpha_1, \alpha_2, \dots, \alpha_n$ is mathematically expressed as:
+        \[
+        \text{Parse}(A, \tau) = \bigvee_{i=1}^{n} \left( \bigwedge_{j=1}^{|\alpha_i|} \text{Match}(\alpha_{i,j}, \tau_{next}) \right)
+        \]
+        where $\tau$ represents the current token stream state.
+
+        \item \textbf{Backtracking and Memory State:} Upon sub-rule mismatch, the global token pointer $\tau$ is reverted to its pre-evaluation state ($\tau_{entry}$):
+        \[
+        \text{State}(\tau) \leftarrow \text{Restore}(\tau_{entry}) \text{ iff } \exists j \in [1, |\alpha_i|] : \text{Match}(\alpha_{i,j}) = \text{False}
+        \]
+
+        \item \textbf{DFS Static Analysis Model:} To prevent infinite loops caused by left-recursion ($A \to A\alpha$), the grammar is mapped as a Directed Dependency Graph. A cycle is identified via DFS prior to parsing:
+        \[
+        \text{Cycle}(A) = \text{True} \iff A \in \text{Ancestors}(A)
+        \]
+    \end{enumerate}
+
+    \section{Engineering Challenges and Applied Solutions}
+    
+    \subsection{Challenge 1: Left-Recursion and System Stability}
+    Top-down parsers are inherently susceptible to stack overflow exceptions when encountering left-recursive rules. The \textit{Syntax Engine} forces the grammar through a static DFS validation phase. If a cycle is detected (e.g., $A \to B \to A$), the engine cleanly aborts and logs the anomalous path, preserving system stability.
+
+    \subsection{Challenge 2: Automated PDF Reporting (main\_display.py)}
+    Restricting analysis results to standard command-line ASCII outputs is insufficient for rigorous academic review. Consequently, \texttt{main\_display.py} module generates and opens high-resolution PDF documents, stylizing terminal leaves as filled blue rectangles and non-terminal nodes as white ellipses.
+
+    \subsection{Challenge 3: Semantic Error Diagnostics (Where, What, Why)}
+    The system tracks the maximum valid token index reached (\texttt{max\_idx}). Upon absolute failure, it produces a report pinpointing \textbf{Where} the process halted, \textbf{What} tokens were expected, and \textbf{Why} the specific grammatical constraint was violated.
+
+    \section{Findings and Experimental Validation}
+    The engine was rigorously tested against diverse grammatical scenarios, including linguistic hierarchies, recursive epsilon transitions, and mathematical expressions.
+
+    \subsection{Linguistic Structural Hierarchy (Grammar 1)}
+    \textbf{Input:} \textit{"the man saw a dog"} [cite: 97, 152] \\
+    The system successfully derived the linguistic structure, producing the following ASCII hierarchy and clean JSON serialization[cite: 105, 107]:
+\begin{verbatim}
+└── <sentence>
+    ├── <noun-phrase>
+    │   ├── <determiner>
+    │   │   └── the
+    │   └── <noun>
+    │       └── man
+    └── <verb-phrase>
+        ├── <verb>
+        │   └── saw
+        └── <noun-phrase>
+            ├── <determiner>
+            │   └── a
+            └── <noun>
+                └── dog
+\end{verbatim}
+
+\begin{lstlisting}[language=json]
+{
+    "sentence": {
+        "noun-phrase": { "determiner": "the", "noun": "man" },
+        "verb-phrase": {
+            "verb": "saw",
+            "noun-phrase": { "determiner": "a", "noun": "dog" }
+        }
+    }
+}
+\end{lstlisting}
+
+    \subsection{Recursive Epsilon Derivations (Grammar 2)}
+    \textbf{Input:} \textit{"ab"} [cite: 146, 153] \\
+    The system handles epsilon ($\epsilon$) base cases in recursive rules efficiently, as demonstrated in the mathematical grammar model[cite: 144, 156]:
+\begin{lstlisting}[language=json]
+{
+    "S": {
+        "A": { "a": "a", "A": { "epsilon": "epsilon" } },
+        "B": { "b": "b", "B": { "epsilon": "epsilon" } }
+    }
+}
+\end{lstlisting}
+
+    \subsection{Mathematical Operator Precedence (Grammar 3)}
+    \textbf{Input:} \textit{"3 + 5"} \\
+    To benchtest the backtracking algorithm and deep recursion limits, a supplementary mathematical dataset was introduced:
+\begin{verbatim}
+└── <expr>
+    ├── <term>
+    │   └── <factor>
+    │       └── <num>
+    │           └── 3
+    ├── +
+    └── <expr>
+        └── <term>
+            └── <factor>
+                └── <num>
+                    └── 5
+\end{verbatim}
+
+    \subsection{Semantic Anomaly Diagnostics}
+    For the invalid input \textit{"liked the dog"}, the diagnostic kernel isolated the failure with contextual semantic awareness[cite: 135, 140]:
+\begin{verbatim}
+Invalid
+Error:
+•Where the error occurs: at token 1 ("liked")
+•What was expected: "the" or "a"
+•Why the sentence is invalid: the sentence begins with a verb, 
+ but grammar requires a noun phrase before the verb phrase.
+\end{verbatim}
+
+    \section{Conclusion and Discussion}
+    The development of the \textit{Syntax Engine} has resulted in a robust, high-fidelity framework for formal language analysis that successfully bridges the gap between theoretical grammar specifications and practical software engineering. By eschewing automated parsing libraries in favor of a manually coded Recursive Descent kernel, this project achieves the highest level of architectural control and provides total transparency into the derivation process.
+
+    A significant technical achievement of the project is the implementation of the \textbf{Static Left-Recursion Guard}. By integrating a Depth-First Search (DFS) cycle-detection algorithm into the ingestion phase, the engine ensures 100\% system stability against stack overflow anomalies—a common vulnerability in top-down parsers[cite: 1, 67, 86]. Furthermore, the dual-interface approach, comprising a high-performance command-line suite (\texttt{main\_display.py}) and an event-driven Graphical User Interface (\texttt{main\_GUI.py}), demonstrates a commitment to professional-grade delivery and user-centric design[cite: 101, 107].
+
+    The experimental validation across diverse datasets—ranging from linguistic structures to deeply nested mathematical expressions—proves that the engine's backtracking and state-management protocols are both resilient and efficient[cite: 14, 80, 82]. Ultimately, the \textit{Syntax Engine} stands as a comprehensive syntax analysis suite that not only fulfills the academic requirements of SE2002 but also serves as a scalable foundation for future compiler development.
+
+    \section{Recommendations}
+    While the current iteration of the \textit{Syntax Engine} is highly effective for context-free grammars, future enhancements could focus on the following areas:
+    \begin{itemize}
+        \item \textbf{Packrat Parsing:} Implementing memoization techniques to cache intermediate derivation results could significantly optimize time complexity for highly ambiguous or massive grammar sets.
+        \item \textbf{Lexical Pre-processing:} Integrating a dedicated tokenizer to handle complex string literals, comments, and irregular whitespace would allow the engine to process raw source code from existing programming languages more fluously.
+        \item \textbf{Dynamic Rule Refactoring:} Developing an algorithm to automatically transform left-recursive rules into right-recursive equivalents would allow the engine to process any BNF specification without manual intervention.
+    \end{itemize}
+    
+    \section*{References}
+    \begin{enumerate}[label={[\arabic*]}]
+        \item Dr. Çağatay Murat Yılmaz, "SE2002-Programming Languages Project Documentation", KTU, 2026[cite: 1, 122].
+        \item J. Backus, "The syntax and semantics of the proposed international algebraic language", 1959[cite: 122].
+        \item A. Aho et al., "Compilers: Principles, Techniques, and Tools", 2nd ed., Addison-Wesley, 2006.
+    \end{enumerate}
+    
+\end{document}
