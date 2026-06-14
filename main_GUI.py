@@ -13,6 +13,7 @@ import webbrowser
 from PIL import Image
 from tkinter import filedialog
 from datetime import datetime
+import interpreter
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -25,6 +26,8 @@ def clean_json(data):
 class SyntaxEngine(ctk.CTk):
     def __init__(self):
         super().__init__()
+        
+        self.engine = interpreter.Interpreter()
 
         self.title("SYNTAX ENGINE | CFG PARSER & ANALYZER")
         self.geometry("1300x950")
@@ -206,7 +209,8 @@ class SyntaxEngine(ctk.CTk):
             valid_count = 0
 
             for i, s in enumerate(p.sentences):
-                p.tokens = [t for t in s if t != "ε"]
+                sentence_str = " ".join([t for t in s if t != "ε"])
+                p.tokens = p.lexer.tokenize(sentence_str)
                 p.current_index = 0
                 p.max_idx = 0
                 p.expected_at_max = []
@@ -219,6 +223,11 @@ class SyntaxEngine(ctk.CTk):
                     tree_str = tree_gen.generate_parse_tree({start_symbol: result})
                     self.tree_out.insert("end", f"Input: {' '.join(s)}\nValid\nParse tree:\n\n")
                     self.tree_out.insert("end", tree_str + "\n\n")
+
+                    ast_result = self.engine.evaluate({start_symbol: result})
+                    if ast_result is not None:
+                        self.tree_out.insert("end", f"AST ENGINE OUTPUT: {ast_result}\n\n")
+                        self.log_kernel(f"AST EXECUTION SUCCESSFUL (Input {i+1}): {ast_result}")
                     
                     self.json_out.insert("end", f"// VALIDATED ENTRY {i+1}\n")
                     self.json_out.insert("end", json.dumps(clean_json({start_symbol: result}), indent=4, ensure_ascii=False) + "\n\n")
@@ -251,14 +260,18 @@ class SyntaxEngine(ctk.CTk):
                 else:
                     self.tree_out.insert("end", f"Input: {' '.join(s)}\nInvalid\n\n")
                     
-                    token_label = s[p.max_idx] if p.max_idx < len(s) else "EOF"
+                    if p.max_idx < len(p.tokens):
+                        token_label = p.tokens[p.max_idx].value
+                    else:
+                        token_label = "EOF"
+                    
                     expected_str = ' or '.join([f'"{e}"' for e in p.expected_at_max])
                     
                     why_msg = ""
                     if p.max_idx == 0:
                         why_msg = f"the sentence begins with '{token_label}', but grammar requires {expected_str} to start"
                     else:
-                        prev_token = s[p.max_idx - 1]
+                        prev_token = p.tokens[p.max_idx - 1].value
                         why_msg = f"after '{prev_token}', the grammar requires {expected_str} to continue the sequence, but found '{token_label}'"
 
                     self.error_out.insert("end", f"Input: {' '.join(s)}\nInvalid\nError:\n")

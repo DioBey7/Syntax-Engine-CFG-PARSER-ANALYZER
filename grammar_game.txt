@@ -1,0 +1,8 @@
+<command> ::= <spawn_action> | <state_action>
+<spawn_action> ::= spawn <npc> at <zone>
+<state_action> ::= set <attribute> = <value>
+
+<npc> ::= hunter | golem | boss
+<zone> ::= dungeon | arena | sanctuary
+<attribute> ::= aggro | health | speed
+<value> ::= 100 | 80 | 0

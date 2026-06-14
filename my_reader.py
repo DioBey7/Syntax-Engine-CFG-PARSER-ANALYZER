@@ -5,7 +5,7 @@ class Reader:
         self.grammar_path = os.path.join(os.path.dirname(__file__), grammar_file)
         self.sentences_path = os.path.join(os.path.dirname(__file__), sentences_file)
 
-    def read_bnf_grammar(self):
+    def read_bnf_grammar(self): 
         grammar = {}
         last_lhs = None
         try:
@@ -26,7 +26,7 @@ class Reader:
             return grammar
         except FileNotFoundError: return {}
 
-    def read_sentences(self):
+    def read_sentences(self): 
         sentences = []
         try:
             with open(self.sentences_path, 'r', encoding='utf-8') as f:

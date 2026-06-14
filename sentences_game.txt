@@ -1,0 +1,5 @@
+spawn hunter at arena
+set aggro = 100
+spawn boss at dungeon
+set health = 80
+spawn golem at tavern

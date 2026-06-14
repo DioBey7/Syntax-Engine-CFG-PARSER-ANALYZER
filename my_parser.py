@@ -1,10 +1,12 @@
 import my_reader
+import lexer
 
 class Parser:
     def __init__(self, grammar_file, sentences_file):
         self.reader = my_reader.Reader(grammar_file, sentences_file)
         self.grammar = self.reader.read_bnf_grammar()
         self.sentences = self.reader.read_sentences()
+        self.lexer = lexer.Lexer()
         self.current_index = 0
         self.tokens = []
         self.max_idx = 0
@@ -44,10 +46,11 @@ class Parser:
             return "ε"
 
         if symbol not in self.grammar:
-            if self.current_index < len(self.tokens) and self.tokens[self.current_index] == symbol:
-                val = self.tokens[self.current_index]
-                self.current_index += 1
-                return val
+            if self.current_index < len(self.tokens):
+                current_token = self.tokens[self.current_index]
+                if current_token.value == symbol:
+                    self.current_index += 1
+                    return current_token.value
             
             if self.current_index >= self.max_idx:
                 if self.current_index > self.max_idx:
@@ -77,18 +80,26 @@ class Parser:
                 return children
         return None
 
-    def error_check(self, sentence, start_symbol):
-        token_label = sentence[self.max_idx] if self.max_idx < len(sentence) else "EOF"
+    def error_check(self, start_symbol):
+        if self.max_idx < len(self.tokens):
+            err_token = self.tokens[self.max_idx]
+            token_label = err_token.value
+            location_info = f"Satır {err_token.line}, Sütun {err_token.column}"
+        else:
+            token_label = "EOF"
+            location_info = "Belge Sonu"
+
         expected_str = ' or '.join([f'"{e}"' for e in self.expected_at_max])
         why_msg = ""
+        
         if self.max_idx == 0:
             why_msg = f"the sentence begins with '{token_label}', but grammar requires {expected_str} to start"
         else:
-            prev_token = sentence[self.max_idx - 1]
+            prev_token = self.tokens[self.max_idx - 1].value
             why_msg = f"after '{prev_token}', the grammar requires {expected_str} to continue the sequence, but found '{token_label}'"
 
         print("Invalid\n")
-        print("Error:")
-        print(f"•Where the error occurs: at token {self.max_idx + 1} (\"{token_label}\")")
-        print(f"•What was expected: {expected_str}")
-        print(f"•Why the sentence is invalid: {why_msg}")
+        print("Error Diagnostics:")
+        print(f"• WHERE : {location_info} (at token '{token_label}')")
+        print(f"• WHAT  : {expected_str} was expected.")
+        print(f"• WHY   : {why_msg}")
