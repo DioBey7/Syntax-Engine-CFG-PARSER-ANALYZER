@@ -128,7 +128,7 @@ class SyntaxEngine(ctk.CTk):
 
     def advertise_yourself(self):
         self.play_sound("click")
-        webbrowser.open_new_tab("https://github.com/DioBey7?tab=repositories")
+        webbrowser.open_new_tab("YOUR REPO/WEBSITE LINK")
         self.log_kernel("Redirecting to Developer Repository...")
 
     def play_sound(self, sound_type):
