@@ -426,6 +426,6 @@ For issues, questions, or feature requests:
 
 ---
 
-**Version:** Academic Build 443728  
+**Version:** Academic Build
 **Last Updated:** June 2026  
 **Status:** Active Development
